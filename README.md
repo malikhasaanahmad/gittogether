@@ -1,108 +1,27 @@
-# 🚀 GitTogether - Full-Stack Git IDE
+# GitTogether
 
-A complete full-stack Git repository manager with browser-based IDE, Supabase authentication, and cloud storage. Create repositories, edit files, and commit changes - all in the browser!
+GitTogether is a code editor and version control system that runs in the browser. You can sign in, create a repository, edit files, and save your work as commits. You can also create branches, switch between them, and browse each branch’s commit history.
 
-## ✨ Features
 
-- **� Authentication** - Email/password signup and login via Supabase Auth
-- **📦 Repository Management** - Create new repos or select existing ones
-- **💻 Browser IDE** - Replit-style in-situ code editor
-- **📁 File Explorer** - Navigate repository structure
-- **💾 Version Control** - Commit changes with messages
-- **🗄️ Cloud Storage** - All data in Supabase PostgreSQL (no local files)
-- **👤 User Isolation** - Each user sees only their own repos
-- **🎨 Modern UI** - Clean, intuitive interface
-- **⚡ Real-time Ready** - Built for real-time collaboration
+## Architecture
 
-## 🏗️ Architecture
-
-```
-┌─────────────────────┐
-│ Frontend (React)    │
-│ - LoginPage         │
-│ - RepoSetup         │
-│ - IDE               │
-│ - File Editor       │
-└──────────┬──────────┘
-           │
-        HTTP/JSON
-           │
-┌──────────▼──────────┐
-│ Backend (Express)   │
-│ - Auth endpoints    │
-│ - Repo endpoints    │
-│ - File endpoints    │
-│ - Commit endpoints  │
-└──────────┬──────────┘
-           │
-      Supabase Client
-           │
-┌──────────▼──────────┐
-│ Supabase Database   │
-│ - PostgreSQL        │
-│ - Auth             │
-│ - Storage          │
-└─────────────────────┘
+```mermaid
+flowchart LR
+    Browser["React browser app"] -->|"Repository and file requests"| API["Express API"]
+    API -->|"Files, commits, and branches"| DB["Supabase PostgreSQL"]
+    Browser -->|"Email and password sign-in"| Auth["Supabase Auth"]
 ```
 
-## 📊 Database Schema
+## How version control works
 
-```
-users (Supabase Auth)
-repositories (owner_id → users.id)
-  ├── branches
-  ├── files
-  └── commits
-      └── commit_files
-```
+GitTogether stores the current working files and the commit history separately in PostgreSQL. When you commit, the backend saves a snapshot of the current files and links the new commit to its parent. Each branch keeps track of its latest commit. When you switch branches, the backend loads that branch’s latest snapshot back into the editor.
 
-## Stack
-- **Frontend**: React 18, TypeScript, Vite, Supabase JS
-- **Backend**: Node.js, Express, Supabase JS Client  
-- **Database**: Supabase PostgreSQL with Auth
-- **Authentication**: Supabase Auth (email/password)
+For example, you can commit a working version on `main`, create a branch to try a change, and commit it there. Switching back to `main` restores the files from the last commit on `main`.
 
-## 🚀 Quick Start
+## Code and setup
 
-### Prerequisites
-- Node.js 16+
-- Supabase account and project
+- [`frontend/`](frontend/) contains the React and TypeScript editor, file browser, and history view. It runs with Vite.
+- [`backend/`](backend/) contains the Node.js and Express API for repositories, files, commits, and branches.
+- Supabase provides email and password sign-in and hosts the PostgreSQL database.
 
-### 1. Clone & Install
-
-### 1. Create Supabase Project
-```bash
-Visit: https://app.supabase.com
-Create new project (takes ~2 min)
-```
-
-### 2. Setup Backend
-```bash
-cd backend
-cp .env.example .env
-# Edit .env with your Supabase credentials:
-#   SUPABASE_URL=https://xxxxx.supabase.co
-#   SUPABASE_KEY=your-service-role-key
-
-npm install
-npm run dev
-```
-
-### 3. Create Database & Start Frontend
-```bash
-# Run this SQL in Supabase SQL Editor (copy from SUPABASE_ONLY_SETUP.md)
-# Then...
-
-cd frontend
-npm install
-npm run dev
-```
-
-Open http://localhost:5173 🎉
-
-## 📚 Documentation
-
-- **[SUPABASE_ONLY_SETUP.md](./SUPABASE_ONLY_SETUP.md)** ← **START HERE**
-- [BACKEND_SUPABASE_IMPLEMENTATION.md](./BACKEND_SUPABASE_IMPLEMENTATION.md) - Detailed steps
-- [QUICK_REFERENCE.md](./QUICK_REFERENCE.md) - Commands & API
-- [VISUAL_SETUP_GUIDE.md](./VISUAL_SETUP_GUIDE.md) - Visual walkthrough
+The [backend](backend/.env.example) and [frontend](frontend/.env.example) environment templates list the settings needed to connect to Supabase. To run the app locally, you’ll need a Supabase project with the base database schema already in place. [`SUPABASE_MIGRATION.sql`](SUPABASE_MIGRATION.sql) adds a column to the existing `commits` table. 
